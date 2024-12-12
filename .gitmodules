@@ -1,0 +1,3 @@
+[submodule "OpenSamples"]
+	path = OpenSamples
+	url = https://github.com/uboone/OpenSamples.git

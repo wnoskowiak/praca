@@ -1,0 +1,10 @@
+scipy
+jupyter
+matplotlib
+plotly
+pandas
+scikit-image
+particle
+h5py
+mpi4py
+pynuml==0.1

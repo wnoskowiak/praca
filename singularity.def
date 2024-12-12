@@ -1,0 +1,52 @@
+Bootstrap: docker
+From: ubuntu:20.04
+
+%post
+    # Update and install dependencies
+     apt-get update && apt-get install -y software-properties-common
+
+     add-apt-repository ppa:deadsnakes/ppa
+
+     apt-get install -y \
+        build-essential \
+        wget \
+        curl \
+        git \
+        libssl-dev \
+        libffi-dev \
+        python3.7 \
+        python3.7-venv \
+        python3.7-dev \
+        python3-pip \
+        openmpi-bin \
+        libopenmpi-dev
+
+    # Create a symbolic link for python3.7
+    ln -s /usr/bin/python3.7 /usr/bin/python
+
+    # Upgrade pip
+    python -m pip install --upgrade pip
+
+    # Clone the repository
+    git clone https://github.com/wnoskowiak/pracaMagisterska.git
+    cd pracaMagisterska/
+
+    # Install specified Python packages
+    python -m pip install -r requirements.txt
+
+%files
+    Inclusive_with_wire_info ~/pracaMagisterska/Inclusive_with_wire_info
+
+%environment
+    # Set environment variables
+    export PATH=/usr/local/bin:$PATH
+    export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+
+%runscript
+    # Define the default command to run
+    exec python "$@"
+
+%labels
+    Author Wojciech Noskowiak
+    Version 1.0
+    Description Singularity container with Python 3.7, MPI, and specified Python packages
