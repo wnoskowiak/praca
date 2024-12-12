@@ -28,14 +28,14 @@ From: ubuntu:20.04
     python -m pip install --upgrade pip
 
     # Clone the repository
-    git clone https://github.com/wnoskowiak/pracaMagisterska.git
-    cd pracaMagisterska/
+    git clone https://github.com/wnoskowiak/praca.git
+    cd praca/
 
     # Install specified Python packages
     python -m pip install -r requirements.txt
 
 %files
-    Inclusive_with_wire_info ~/pracaMagisterska/Inclusive_with_wire_info
+    Inclusive_with_wire_info ~/praca/Inclusive_with_wire_info
 
 %environment
     # Set environment variables
