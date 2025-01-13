@@ -17,17 +17,17 @@ From: ubuntu:20.04
         git \
         libssl-dev \
         libffi-dev \
-        python3.12 \
-        python3.12-venv \
-        python3.12-dev \
+        python3.10 \
+        python3.10-venv \
+        python3.10-dev \
         python3-pip \
         default-mysql-client \
         unzip
 
-    # Create a symbolic link for python3.12
-    ln -s /usr/bin/python3.12 /usr/bin/python
+    # Create a symbolic link for python3.10
+    ln -s /usr/bin/python3.10 /usr/bin/python
 
-    curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12
+    curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10
 
     python -m pip install --no-cache-dir \
             torch \
@@ -41,7 +41,7 @@ From: ubuntu:20.04
 %environment
     export PATH=/usr/local/bin:$PATH
     export PATH=~/.local/bin:$PATH
-    export PYTHONPATH=/usr/lib/python3.12/site-packages
+    export PYTHONPATH=/usr/lib/python3.10/site-packages
     export LC_ALL=C.UTF-8
 
 %runscript
