@@ -3,11 +3,11 @@ From: ubuntu:20.04
 
 %post
     # Update and install dependencies
-     apt-get update && apt-get install -y software-properties-common
+    apt-get update && apt-get install -y software-properties-common
 
-     add-apt-repository ppa:deadsnakes/ppa
+    add-apt-repository ppa:deadsnakes/ppa
 
-     apt-get install -y \
+    apt-get install -y \
         build-essential \
         wget \
         curl \
@@ -19,7 +19,8 @@ From: ubuntu:20.04
         python3.7-dev \
         python3-pip \
         openmpi-bin \
-        libopenmpi-dev
+        libopenmpi-dev \
+        default-mysql-client
 
     # Create a symbolic link for python3.7
     ln -s /usr/bin/python3.7 /usr/bin/python
@@ -29,9 +30,6 @@ From: ubuntu:20.04
 
     # Install specified Python packages
     python -m pip install scipy jupyter matplotlib plotly pandas scikit-image particle h5py mpi4py pynuml==0.1
-
-# %files
-#     Inclusive_with_wire_info ~/praca/Inclusive_with_wire_info
 
 %environment
     # Set environment variables
