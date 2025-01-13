@@ -10,8 +10,8 @@ from PIL import Image
 from pynuml.io import File
 
 # Read file path from environment variable
-file_path = os.getenv('H5_FILE_PATH', '../Inclusive_with_wire_info/bnb_WithWire_00.h5')
-f = File(file_path)
+# file_path = os.getenv('H5_FILE_PATH', '../Inclusive_with_wire_info/bnb_WithWire_00.h5')
+f = File("../praca/Inclusive_with_wire_info/bnb_WithWire_00.h5")
 
 tables = ['event_table','wire_table','hit_table','edep_table']
 for t in tables: f.add_group(t)
