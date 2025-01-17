@@ -1,3 +1,4 @@
+import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -45,23 +46,30 @@ def create_dataloader(data, resize_dims=(128, 128), batch_size=32):
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     return dataloader
 
-# Step 4: Define a CNN model
 class SimpleCNN(nn.Module):
     def __init__(self, input_size):
         super(SimpleCNN, self).__init__()
         self.conv1 = nn.Conv2d(3, 32, 3, 1)
         self.conv2 = nn.Conv2d(32, 64, 3, 1)
-        self.fc1 = nn.Linear(64 * input_size[0] * input_size[1], 128)
-        self.fc2 = nn.Linear(128, 2)  # Changed to 2 classes
+        self.conv3 = nn.Conv2d(64, 128, 3, 1)
+        self.conv4 = nn.Conv2d(128, 256, 3, 1)
+        self.fc1 = nn.Linear(256 * input_size[0] * input_size[1], 512)
+        self.fc2 = nn.Linear(512, 128)
+        self.fc3 = nn.Linear(128, 2)
 
     def forward(self, x):
         x = F.relu(self.conv1(x))
         x = F.max_pool2d(x, 2)
         x = F.relu(self.conv2(x))
         x = F.max_pool2d(x, 2)
+        x = F.relu(self.conv3(x))  
+        x = F.max_pool2d(x, 2)
+        x = F.relu(self.conv4(x))
+        x = F.max_pool2d(x, 2)
         x = torch.flatten(x, 1)
         x = F.relu(self.fc1(x))
-        x = self.fc2(x)
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
         return x
 
 def calculate_conv_output_size(input_size, kernel_size, stride=1, padding=0):
@@ -102,12 +110,12 @@ def evaluate_model(dataloader, model):
     print(f"Accuracy: {100 * correct / total}%")
 
 if __name__ == "__main__":
-    db_path = 'path/to/your/database.db'
-    resize_dims = (128, 128)  # Set your desired resize dimensions here
+    db_path = os.getenv('DB_PATH')
+    resize_dims = (128, 128)
     data = fetch_data_from_db(db_path)
     dataloader = create_dataloader(data, resize_dims=resize_dims)
     
-    conv_layers = [nn.Conv2d(3, 32, 3, 1), nn.Conv2d(32, 64, 3, 1)]
+    conv_layers = [nn.Conv2d(3, 32, 3, 1), nn.Conv2d(32, 64, 3, 1), nn.Conv2d(64, 128, 3, 1), nn.Conv2d(128, 256, 3, 1)]
     conv_output_size = get_conv_output_size(resize_dims[0], conv_layers)
     model = SimpleCNN((conv_output_size, conv_output_size))
     

@@ -9,20 +9,13 @@ from PIL import Image
 
 from pynuml.io import File
 
-# Read file path from environment variable
-# file_path = os.getenv('H5_FILE_PATH', '../Inclusive_with_wire_info/bnb_WithWire_00.h5')
-f = File("../Inclusive_with_wire_info/bnb_WithWire_00.h5")
+directory_path = os.getenv('DIRECTORY_PATH', './Inclusive_with_wire_info')
 
-tables = ['event_table','wire_table','hit_table','edep_table']
-for t in tables: f.add_group(t)
-f.read_data(0, 8)
-evts = f.build_evt()
+file_list = [os.path.join(directory_path, f) for f in os.listdir(directory_path) if f.endswith('.h5')]
 
-# Connect to SQLite database (or create it if it doesn't exist)
 conn = sqlite3.connect('event_data.db')
 c = conn.cursor()
 
-# Create table for images and labels
 c.execute('''
     CREATE TABLE IF NOT EXISTS event_data (
         event_id TEXT,
@@ -36,59 +29,60 @@ c.execute('''
     )
 ''')
 
-for evt in evts:
-    evt_id = "%i_%i_%i" % (evt["event_table"]["run"].iloc[0], evt["event_table"]["subrun"].iloc[0], evt["event_table"]["event"].iloc[0])
+for file_path in file_list:
+    f = File(file_path)
 
-    wires = evt["wire_table"]
-    planeadcs = [wires.query("local_plane==%i" % p)[['adc_%i' % i for i in range(0, ntimeticks())]].to_numpy() for p in range(0, nplanes())]
+    tables = ['event_table', 'wire_table', 'hit_table', 'edep_table']
+    for t in tables:
+        f.add_group(t)
+    f.read_data(0, 8)
+    evts = f.build_evt()
 
-    f_downsample = 6
-    for p in range(0, nplanes()):
-        planeadcs[p] = block_reduce(planeadcs[p], block_size=(1, f_downsample), func=np.sum)
+    for evt in evts:
+        evt_id = "%i_%i_%i" % (evt["event_table"]["run"].iloc[0], evt["event_table"]["subrun"].iloc[0], evt["event_table"]["event"].iloc[0])
 
-    adccutoff = 10. * f_downsample / 6.
-    adcsaturation = 100. * f_downsample / 6.
-    for p in range(0, nplanes()):
-        planeadcs[p][planeadcs[p] < adccutoff] = 0
-        planeadcs[p][planeadcs[p] > adcsaturation] = adcsaturation
+        wires = evt["wire_table"]
+        planeadcs = [wires.query("local_plane==%i" % p)[['adc_%i' % i for i in range(0, ntimeticks())]].to_numpy() for p in range(0, nplanes())]
 
-    zmax = adcsaturation
+        f_downsample = 6
+        for p in range(0, nplanes()):
+            planeadcs[p] = block_reduce(planeadcs[p], block_size=(1, f_downsample), func=np.sum)
 
-    print("Run / Sub / Event : %i / %i / %i - saturation set to ADC sum=%.2f" % (evt_id[0], evt_id[1], evt_id[2], zmax))
+        adccutoff = 10. * f_downsample / 6.
+        adcsaturation = 100. * f_downsample / 6.
+        for p in range(0, nplanes()):
+            planeadcs[p][planeadcs[p] < adccutoff] = 0
+            planeadcs[p][planeadcs[p] > adcsaturation] = adcsaturation
 
-    # Function to save image to database
-    def save_image_to_db(event_id, plane, image_array, label):
-        img = Image.fromarray((image_array * 255 / zmax).astype(np.uint8))
-        with BytesIO() as output:
-            img.save(output, format="PNG")
-            image_blob = output.getvalue()
-        c.execute("INSERT OR REPLACE INTO event_data (event_id, plane, image, label) VALUES (?, ?, ?, ?)", (event_id, plane, image_blob, label))
+        zmax = adcsaturation
 
-    # Save labels
-    hits = evt["hit_table"]
-    edeps = evt["edep_table"]
-    edeps = edeps.sort_values(by=['energy_fraction'], ascending=False, kind='mergesort').drop_duplicates(["hit_id"])
-    hits = hits.merge(edeps, on=["hit_id"], how="left")
-    hits['g4_id'] = hits['g4_id'].fillna(-1)
-    hits = hits.fillna(0)
+        print("Run / Sub / Event : %i / %i / %i - saturation set to ADC sum=%.2f" % (evt_id[0], evt_id[1], evt_id[2], zmax))
 
-    label = 1 if len(hits) > 0 else 0
+        def save_image_to_db(event_id, plane, image_array, label):
+            img = Image.fromarray((image_array * 255 / zmax).astype(np.uint8))
+            with BytesIO() as output:
+                img.save(output, format="PNG")
+                image_blob = output.getvalue()
+            c.execute("INSERT OR REPLACE INTO event_data (event_id, plane, image, label) VALUES (?, ?, ?, ?)", (event_id, plane, image_blob, label))
 
-    # Save Plane 0 image
-    save_image_to_db(evt_id, 0, planeadcs[0].T, label)
+        hits = evt["hit_table"]
+        edeps = evt["edep_table"]
+        edeps = edeps.sort_values(by=['energy_fraction'], ascending=False, kind='mergesort').drop_duplicates(["hit_id"])
+        hits = hits.merge(edeps, on=["hit_id"], how="left")
+        hits['g4_id'] = hits['g4_id'].fillna(-1)
+        hits = hits.fillna(0)
 
-    # Save Plane 1 image
-    save_image_to_db(evt_id, 1, planeadcs[1].T, label)
+        label = 1 if len(hits) > 0 else 0
 
-    # Save Plane 2 image
-    save_image_to_db(evt_id, 2, planeadcs[2].T, label)
+        save_image_to_db(evt_id, 0, planeadcs[0].T, label)
+        save_image_to_db(evt_id, 1, planeadcs[1].T, label)
+        save_image_to_db(evt_id, 2, planeadcs[2].T, label)
 
-    for _, hit in hits.iterrows():
-        c.execute("INSERT OR REPLACE INTO event_data (event_id, plane, image, hit_id, g4_id, energy_fraction, label) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                  (evt_id, hit['local_plane'], None, hit['hit_id'], hit['g4_id'], hit['energy_fraction'], label))
+        for _, hit in hits.iterrows():
+            c.execute("INSERT OR REPLACE INTO event_data (event_id, plane, image, hit_id, g4_id, energy_fraction, label) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                      (evt_id, hit['local_plane'], None, hit['hit_id'], hit['g4_id'], hit['energy_fraction'], label))
 
-    print(len(hits))
+        print(len(hits))
 
-# Commit and close the database connection
 conn.commit()
 conn.close()
