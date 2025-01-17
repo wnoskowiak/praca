@@ -3,14 +3,13 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader, random_split
 from torchvision import transforms
 import sqlite3
 import numpy as np
 from PIL import Image
 import io
 
-# Step 1: Connect to the SQL database and fetch the images and labels
 def fetch_data_from_db(db_path):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
@@ -19,7 +18,6 @@ def fetch_data_from_db(db_path):
     conn.close()
     return data
 
-# Step 2: Preprocess the images and labels
 class ImageDataset(Dataset):
     def __init__(self, data, transform=None):
         self.data = data
@@ -35,16 +33,22 @@ class ImageDataset(Dataset):
             image = self.transform(image)
         return image, label
 
-# Step 3: Create a PyTorch dataset and dataloader
-def create_dataloader(data, resize_dims=(128, 128), batch_size=32):
+def create_dataloader(data, resize_dims=(128, 128), batch_size=32, val_split=0.2):
     transform = transforms.Compose([
         transforms.Resize(resize_dims),
         transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
     dataset = ImageDataset(data, transform=transform)
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
-    return dataloader
+    
+    val_size = int(len(dataset) * val_split)
+    train_size = len(dataset) - val_size
+    train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
+    
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+    
+    return train_loader, val_loader
 
 class SimpleCNN(nn.Module):
     def __init__(self, input_size):
@@ -79,10 +83,9 @@ def get_conv_output_size(input_size, conv_layers):
     size = input_size
     for layer in conv_layers:
         size = calculate_conv_output_size(size, layer.kernel_size[0], layer.stride[0], layer.padding[0])
-        size //= 2  # Max pooling
+        size //= 2  
     return size
 
-# Step 5: Train the CNN model
 def train_model(dataloader, model, criterion, optimizer, epochs=10):
     model.train()
     for epoch in range(epochs):
@@ -96,7 +99,6 @@ def train_model(dataloader, model, criterion, optimizer, epochs=10):
             running_loss += loss.item()
         print(f"Epoch {epoch+1}, Loss: {running_loss/len(dataloader)}")
 
-# Step 6: Evaluate the model (optional)
 def evaluate_model(dataloader, model):
     model.eval()
     correct = 0
@@ -113,7 +115,7 @@ if __name__ == "__main__":
     db_path = os.getenv('DB_PATH')
     resize_dims = (128, 128)
     data = fetch_data_from_db(db_path)
-    dataloader = create_dataloader(data, resize_dims=resize_dims)
+    train_loader, val_loader = create_dataloader(data, resize_dims=resize_dims)
     
     conv_layers = [nn.Conv2d(3, 32, 3, 1), nn.Conv2d(32, 64, 3, 1), nn.Conv2d(64, 128, 3, 1), nn.Conv2d(128, 256, 3, 1)]
     conv_output_size = get_conv_output_size(resize_dims[0], conv_layers)
@@ -121,5 +123,5 @@ if __name__ == "__main__":
     
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
-    train_model(dataloader, model, criterion, optimizer)
-    evaluate_model(dataloader, model)
+    train_model(train_loader, model, criterion, optimizer)
+    evaluate_model(val_loader, model)
