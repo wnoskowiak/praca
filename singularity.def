@@ -15,7 +15,15 @@ From: archlinux:latest
         openmpi \
         mariadb-clients \
         hdf5-openmpi \
-        go
+        go \
+        sudo
+
+    # Create a non-root user
+    useradd -m -s /bin/bash builduser
+    echo "builduser ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
+    # Switch to the non-root user
+    su - builduser <<EOF
 
     # Install yay
     git clone https://aur.archlinux.org/yay.git /opt/yay
