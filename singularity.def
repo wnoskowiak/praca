@@ -12,29 +12,50 @@ From: archlinux:latest
         git \
         openssl \
         libffi \
-        python \
-        python-virtualenv \
-        python-pip \
         openmpi \
-        # hdf5 \
-        mariadb \
-        hdf5-openmpi
+        mariadb-clients \
+        hdf5-openmpi \
+        zlib \
+        zlib-devel \
+        bzip2 \
+        bzip2-devel \
+        readline \
+        readline-devel \
+        sqlite \
+        sqlite-devel \
+        openssl-devel \
+        tk-devel \
+        libffi-devel \
+        xz-devel
+
+    # Install pyenv
+    curl https://pyenv.run | bash
+
+    # Set environment variables for pyenv
+    export PATH="/root/.pyenv/bin:$PATH"
+    eval "$(pyenv init --path)"
+    eval "$(pyenv init -)"
+    eval "$(pyenv virtualenv-init -)"
+
+    # Install Python 3.7.12 using pyenv
+    pyenv install 3.7.12
+    pyenv global 3.7.12
 
     # Upgrade pip
-    python -m pip install --upgrade pip
+    pip install --upgrade pip
 
     # Install mpi4py first
-    python -m pip install mpi4py
+    pip install mpi4py
 
     # Install h5py with MPI support
-    # HDF5_MPI="ON" CC=mpicc HDF5_DIR=/usr/lib python -m pip install --no-binary=h5py h5py
+    # HDF5_MPI="ON" CC=mpicc HDF5_DIR=/usr/lib pip install --no-binary=h5py h5py
 
     # Install other specified Python packages
-    python -m pip install scipy jupyter matplotlib plotly pandas scikit-image particle pynuml==0.1
+    pip install scipy jupyter matplotlib plotly pandas scikit-image particle pynuml==0.1
 
 %environment
     # Set environment variables
-    export PATH=/usr/local/bin:$PATH
+    export PATH="/root/.pyenv/versions/3.7.12/bin:$PATH"
     export LD_LIBRARY_PATH=/usr/local/lib:/usr/lib:$LD_LIBRARY_PATH
 
 %runscript
