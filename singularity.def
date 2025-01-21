@@ -17,7 +17,7 @@ From: archlinux:latest
         python-pip \
         openmpi \
         # hdf5 \
-        mariadb-clients \
+        mariadb \
         hdf5-openmpi
 
     # Upgrade pip
