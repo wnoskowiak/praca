@@ -12,16 +12,21 @@ From: archlinux:latest
         git \
         openssl \
         libffi \
-        python \
-        python-virtualenv \
-        python-pip \
         openmpi \
         mariadb-clients \
         hdf5-openmpi \
-        python37
+        go
+
+    # Install yay
+    git clone https://aur.archlinux.org/yay.git /opt/yay
+    cd /opt/yay
+    makepkg -si --noconfirm
+
+    # Install python37 using yay
+    yay -S --noconfirm python37
 
     # Create a virtual environment
-    python37 -m venv /opt/venv
+    python3.7 -m venv /opt/venv
 
     # Activate the virtual environment
     source /opt/venv/bin/activate
@@ -33,7 +38,7 @@ From: archlinux:latest
     /opt/venv/bin/pip install mpi4py
 
     # Install h5py with MPI support
-    HDF5_MPI="ON" CC=mpicc HDF5_DIR=/usr/lib /opt/venv/bin/pip install --no-binary=h5py h5py
+    # HDF5_MPI="ON" CC=mpicc HDF5_DIR=/usr/lib /opt/venv/bin/pip install --no-binary=h5py h5py
 
     # Install other specified Python packages
     /opt/venv/bin/pip install scipy jupyter matplotlib plotly pandas scikit-image particle pynuml==0.1
