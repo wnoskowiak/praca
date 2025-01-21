@@ -12,50 +12,35 @@ From: archlinux:latest
         git \
         openssl \
         libffi \
+        python \
+        python-virtualenv \
+        python-pip \
         openmpi \
         mariadb-clients \
         hdf5-openmpi \
-        zlib \
-        zlib-devel \
-        bzip2 \
-        bzip2-devel \
-        readline \
-        readline-devel \
-        sqlite \
-        sqlite-devel \
-        openssl-devel \
-        tk-devel \
-        libffi-devel \
-        xz-devel
+        python37
 
-    # Install pyenv
-    curl https://pyenv.run | bash
+    # Create a virtual environment
+    python37 -m venv /opt/venv
 
-    # Set environment variables for pyenv
-    export PATH="/root/.pyenv/bin:$PATH"
-    eval "$(pyenv init --path)"
-    eval "$(pyenv init -)"
-    eval "$(pyenv virtualenv-init -)"
+    # Activate the virtual environment
+    source /opt/venv/bin/activate
 
-    # Install Python 3.7.12 using pyenv
-    pyenv install 3.7.12
-    pyenv global 3.7.12
-
-    # Upgrade pip
-    pip install --upgrade pip
+    # Upgrade pip within the virtual environment
+    /opt/venv/bin/pip install --upgrade pip
 
     # Install mpi4py first
-    pip install mpi4py
+    /opt/venv/bin/pip install mpi4py
 
     # Install h5py with MPI support
-    # HDF5_MPI="ON" CC=mpicc HDF5_DIR=/usr/lib pip install --no-binary=h5py h5py
+    HDF5_MPI="ON" CC=mpicc HDF5_DIR=/usr/lib /opt/venv/bin/pip install --no-binary=h5py h5py
 
     # Install other specified Python packages
-    pip install scipy jupyter matplotlib plotly pandas scikit-image particle pynuml==0.1
+    /opt/venv/bin/pip install scipy jupyter matplotlib plotly pandas scikit-image particle pynuml==0.1
 
 %environment
     # Set environment variables
-    export PATH="/root/.pyenv/versions/3.7.12/bin:$PATH"
+    export PATH=/opt/venv/bin:$PATH
     export LD_LIBRARY_PATH=/usr/local/lib:/usr/lib:$LD_LIBRARY_PATH
 
 %runscript
