@@ -1,7 +1,17 @@
 Bootstrap: docker
-From: ubuntu:20.04
+From: ubuntu:22.04
 
 %post
+
+    # Set non-interactive frontend
+    export DEBIAN_FRONTEND=noninteractive
+
+    # Set timezone
+    ln -fs /usr/share/zoneinfo/Europe/Warsaw /etc/localtime
+    # apt-get install -y tzdata
+    # dpkg-reconfigure --frontend noninteractive tzdata
+
+
     # Update and install dependencies
      apt-get update && apt-get install -y software-properties-common
 
@@ -14,17 +24,17 @@ From: ubuntu:20.04
         git \
         libssl-dev \
         libffi-dev \
-        python3.7 \
-        python3.7-venv \
-        python3.7-dev \
+        python3.9 \
+        python3.9-venv \
+        python3.9-dev \
         python3-pip \
         openmpi-bin \
         pkg-config \
         libopenmpi-dev \
         libhdf5-mpi-dev
 
-    # Create a symbolic link for python3.7
-    ln -s /usr/bin/python3.7 /usr/bin/python
+    # Create a symbolic link for python3.9
+    ln -s /usr/bin/python3.9 /usr/bin/python
 
     # Build a MPI version of h5py
     # /opt/venv/bin/python3 -m pip uninstall h5py
@@ -36,8 +46,7 @@ From: ubuntu:20.04
     python -m pip install --upgrade pip
 
     # Install specified Python packages
-    python -m pip install scipy jupyter matplotlib plotly pandas scikit-image particle mpi4py pynuml==0.1
-
+    python -m pip install pynuml scipy jupyter matplotlib plotly pandas scikit-image scikit-learn particle mpi4py
 # %files
 #     Inclusive_with_wire_info ~/praca/Inclusive_with_wire_info
 
@@ -56,4 +65,4 @@ From: ubuntu:20.04
 %labels
     Author Wojciech Noskowiak
     Version 1.0
-    Description Singularity container with Python 3.7, MPI, and specified Python packages
+    Description Singularity container with Python 3.9, MPI, and specified Python packages
