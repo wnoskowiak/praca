@@ -45,6 +45,8 @@ outputDir = "/workspace/outputDir"
 files = os.listdir(inputDir)
 h5_files = [file for file in files if file.endswith('.h5')]
 
+print(h5_files)
+
 columnsToRead = [
     ['event_table', 'is_cc'],
     ['event_table', 'nu_energy'],
@@ -52,7 +54,7 @@ columnsToRead = [
 ]
 
 batchSize = 16
-csv_file_path = os.path.join(outputDir, 'parsed_data.csv')
+csv_file_path = os.path.join(outputDir, 'parsed_data_dos.csv')
 
 
 with open(csv_file_path, 'w') as csv_file:
