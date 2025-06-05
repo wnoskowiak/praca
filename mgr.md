@@ -1,4 +1,37 @@
-# Liquid Argon detectors
+#
+Neutrinos are electrically neutral, spin-½ elementary particles that belong to the lepton family within the Standard Model of particle physics. They exist in three distinct flavors, corresponding to the three charged leptons: the electron neutrino (νₑ), the muon neutrino (ν_μ), and the tau neutrino (ν_τ).
+
+These flavor classifications arise from the weak decay processes mediated by the W boson, in which a charged lepton is produced alongside a corresponding neutrino. For instance, in a W⁻ decay producing an electron, an electron neutrino is emitted; similarly, decays yielding a muon or tau lepton produce a muon or tau neutrino, respectively.
+
+Due to their lack of electric charge, negligible mass, and absence of color charge, neutrinos interact with matter only via the weak nuclear force. This interaction occurs through two fundamental mechanisms: neutral current interactions, mediated by the electrically neutral Z⁰ boson, and charged current interactions, mediated by the charged W⁺ or W⁻ bosons.
+
+In charged current interactions, the neutrino exchanges a W boson with a target particle, resulting in the production of a charged lepton of the same flavor. In contrast, neutral current interactions involve the exchange of a Z⁰ boson and do not alter the identity of the interacting neutrino. 
+
+Because weak interactions occur only at extremely short ranges—on the order of 10^−17 to 10^−18 meters — neutrinos pass largely undisturbed through space, making their detection a technical challange. Nevertheless studying the products of the aforementioned reactions form the primary means by which neutrinos can be detected and studied experimentally.
+
+# neutrino detectors
+
+## determining the type of the interacting neutrino
+
+Neutral current (NC) interactions do not produce a charged lepton and thus provide no direct information about the neutrino’s flavor. charged current (CC) interactions however can be used to identify the flavor of the interacting neutrino.
+
+Those types of interactions result in the production of a charged lepton of the same flavor as the neutrino. (*Interactions produce VUV scintilator potons*) These leptons can also interact with matter more eailsy when traveling through space.
+
+By analyzing the interaction products, in conjunction with information gathered from the scintillation photons, it is possible to reconstruct the lepton’s trajectory and interaction point. This enables the determination of both the neutrino's flavor and the location of the interaction in space.
+
+
+### Liquid Argon detectors
+
+Liquid argon detectors comprise of a chamber filled with liqid argon. (say why argon - i think becouse its dense(?)) When a neutrino interacts with an argon nucleus, it produces charged particles that traverse the medium, leaving behind trails of ionized electrons. The detector volume is subjected to a uniform electric field, which causes these free electrons to drift toward a set of anode planes, where their arrival is recorded. Simultaneously, the interaction also generates vacuum ultraviolet (VUV) scintillation photons. These photons are detected by an array of scintillators strategically placed around the chamber, providing complementary timing and energy information. The combination of ionization charge collection and scintillation light detection allows for high-resolution, three-dimensional reconstruction of particle trajectories and interaction vertices within the detector volume.
+
+## noise
+
+- cosmic rays passing through the chamber can cause ionization
+
+- this results in noise
+
+- these noise patterns are very characteristic and are easy to recognize
+
 
 ## Microboone experiment
 
@@ -49,9 +82,10 @@ In this specific case, a containerization tool called Singularity was used. Sing
 
 ## Events present in the dataset
 
-- rozpisać dokładną dyskusję tego jakie eventy znajdują się w datasecie - skutecznie przeanalizować tabelki w plikach csv z przeprocesowanych danych. histogram energii, ile neutrin mionowych, ile elekronowych, podział na charged current i non charged current
+The BNB (Booster Neutrino Beam) sample contains a total of 24,332 events, all of which are classified as charged-current (CC) interactions. The dataset is composed exclusively of electron neutrinos and antineutrinos, with 19,448 events corresponding to neutrinos (PDG code 12) and 492 to antineutrinos (PDG code –12). No muon neutrinos (PDG 14 or –14) are present. The energy distribution of neutrino interactions in this sample has a mean value of 1.62 GeV, a median of 1.46 GeV, and a standard deviation of 0.86 GeV. The minimum recorded energy is 0.13 GeV, while the maximum reaches 6.13 GeV, with the interquartile range spanning from 0.96 to 2.11 GeV. These characteristics reflect a relatively high-energy subset of interactions, with consistent representation across the full energy spectrum.
 
----
+The νₑ-enhanced sample consists of 19,940 events, containing a broader mix of neutrino types. The majority are muon neutrinos (23,984 with PDG 14), followed by smaller numbers of muon antineutrinos (208 with PDG –14), electron neutrinos (134 with PDG 12), and electron antineutrinos (6 with PDG –12). Of the total, 17,564 events are classified as charged-current, while 6,768 are neutral-current (NC) interactions. Within the charged-current subset, 17,457 events originate from muon neutrinos or antineutrinos, and 107 from electron neutrinos or antineutrinos, indicating a dominance of muon neutrino interactions in this sample. The energy distribution shows a mean of 1.20 GeV, median of 1.08 GeV, and standard deviation of 0.67 GeV, with values ranging from 0.06 GeV to 6.61 GeV, and the interquartile range spanning 0.80 to 1.42 GeV. This distribution suggests a slightly lower-energy spectrum on average, but with a broader mix of interaction types.
+
 
 ## Further dataset processing
 
@@ -75,6 +109,40 @@ To address both issues, each .csv manifest file was loaded into a pandas DataFra
 - dyskusja dla czego mogą one być w tym przypadku użyteczne
 
 ---
+
+- These types of networks are efficient at recognizing characteristical features in images
+
+- the convolutional part can be trained to find features
+
+- the fully conncected part can recognize combinations of those features
+
+- that should technically be enough to recogize the types of interactions that took place within the detector
+
+Convolutional neural networks (CNNs) are particularly effective at identifying characteristic features in images. The convolutional layers are responsible for learning and extracting these features, while the fully connected layers interpret combinations of them to perform classification. In the context of neutrino detection, this architecture is well-suited to recognizing patterns associated with specific types of interactions within the detector, making it a strong candidate for automated event identification.
+
+-----
+
+- Wanted to work with the simplest case
+
+- Electron showers leave the most visible traces
+
+- these only get created in charged current interactions of electron neutrino
+
+- divide data into two classes - CC electron neutrino interactions and other.
+
+----
+
+- One can expect the higher energy neutrinos to be produce higher energy electron
+
+- these cause more significant showers
+
+- possibly easier to recognize 
+
+- we narrow one dataset down to top 50% most energetic cases
+
+To simplify the initial stages of analysis, the decision was made to focus on the most straightforward and visually distinct case: electron neutrino charged current (CC) interactions. These interactions produce energetic electrons that initiate electromagnetic showers, which leave highly visible and easily identifiable traces in the detector. Based on this, the dataset was divided into two classes—electron neutrino CC interactions and all other types of events. It was further hypothesized that higher-energy neutrinos are likely to produce more energetic electrons, which in turn generate more pronounced and spatially extended showers. Such events are presumed to be easier to detect and classify reliably. To leverage this property, the dataset was further narrowed down by selecting the top 50% most energetic electron neutrino CC events, thereby prioritizing those cases with the clearest and most informative signatures.
+
+
 
 ### Neural net - application in specific case
 
